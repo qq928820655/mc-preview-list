@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MC 预览列表</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --line: #334155;
+    --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+    --ok: #34d399; --bad: #f87171; --dim: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 32px 16px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: 1px; }
+  .topbar { display: flex; align-items: center; gap: 12px; }
+  .topbar .user { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .topbar button {
+    background: var(--card); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+  }
+  .topbar button:hover { border-color: var(--accent); color: var(--accent); }
+  .sub { color: var(--muted); font-size: 13px; margin: 6px 0 20px; line-height: 1.7; }
+  .searchbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .searchbar input[type="text"] {
+    flex: 1; min-width: 220px; background: var(--card); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 11px 14px; font-size: 14px; outline: none;
+  }
+  .searchbar input[type="text"]:focus { border-color: var(--accent); }
+  .searchbar label {
+    display: flex; align-items: center; gap: 6px; padding: 0 14px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 13px;
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  .searchbar .count {
+    display: flex; align-items: center; padding: 0 14px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 13px; white-space: nowrap;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 14px; }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; transition: border-color .15s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card.local { opacity: .6; }
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .title { font-size: 15px; font-weight: 600; }
+  .proc { color: var(--muted); font-size: 12px; font-family: monospace; }
+  .badge {
+    margin-left: auto; font-size: 11px; border-radius: 4px; padding: 2px 8px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
+  }
+  .badge.pub { color: var(--ok); border-color: rgba(52,211,153,.35); }
+  .desc { color: var(--muted); font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; }
+  .chip {
+    background: rgba(56,189,248,.1); color: var(--accent); border: 1px solid rgba(56,189,248,.25);
+    border-radius: 5px; padding: 3px 8px; font-family: monospace;
+  }
+  .chip.gray { background: rgba(148,163,184,.08); color: var(--muted); border-color: var(--line); }
+  a.link {
+    color: var(--accent); text-decoration: none; border: 1px solid rgba(56,189,248,.25);
+    border-radius: 5px; padding: 3px 8px; word-break: break-all;
+  }
+  a.link:hover { background: rgba(56,189,248,.15); }
+  .empty { text-align: center; color: var(--muted); padding: 48px 0; font-size: 14px; }
+  .foot { margin-top: 24px; color: var(--muted); font-size: 12px; text-align: center; line-height: 1.8; }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(2,6,23,.85); display: flex;
+    align-items: center; justify-content: center; z-index: 50;
+  }
+  .overlay.hide { display: none; }
+  .login {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 32px 28px; width: 320px;
+  }
+  .login h2 { font-size: 17px; margin-bottom: 18px; text-align: center; }
+  .login input {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none; margin-bottom: 12px;
+  }
+  .login input:focus { border-color: var(--accent); }
+  .login button {
+    width: 100%; background: var(--accent); color: #0f172a; border: none; border-radius: 8px;
+    padding: 10px 0; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .login button:disabled { opacity: .6; }
+  .login .err { color: var(--bad); font-size: 12px; min-height: 16px; margin-bottom: 8px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>MC 预览列表</h1>
+    <span class="user" id="whoami"></span>
+    <button id="logout" style="display:none" onclick="logout()">退出</button>
+  </div>
+  <div class="sub">
+    自动扫描本服务器的全部监听端口，按进程识别应用并匹配功能说明；预览地址按当前访问域名自动推导。
+    数据每 15 秒刷新，检测结果实时反映服务器当前状态。
+  </div>
+  <div class="searchbar">
+    <input id="q" type="text" placeholder="搜索：应用名、功能关键词、端口号、进程…" autofocus autocomplete="off">
+    <label><input type="checkbox" id="local"> 显示仅本机监听</label>
+    <div class="count" id="count">-</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">没有匹配的应用，换个关键词试试</div>
+  <div class="foot" id="foot"></div>
+</div>
+<div class="overlay" id="loginOverlay">
+  <div class="login">
+    <h2>登录 MC 预览列表</h2>
+    <div class="err" id="loginErr"></div>
+    <input id="loginUser" type="text" placeholder="用户名" autocomplete="username">
+    <input id="loginPass" type="password" placeholder="密码" autocomplete="current-password">
+    <button id="loginBtn" onclick="doLogin()">登 录</button>
+  </div>
+</div>
+<script>
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  const countEl = document.getElementById('count');
+  const foot = document.getElementById('foot');
+  const input = document.getElementById('q');
+  const localCb = document.getElementById('local');
+  const overlay = document.getElementById('loginOverlay');
+  const loginErr = document.getElementById('loginErr');
+  const loginBtn = document.getElementById('loginBtn');
+  const whoami = document.getElementById('whoami');
+  const logoutBtn = document.getElementById('logout');
+  let timer = null;
+  let token = localStorage.getItem('mcpl_token') || '';
+
+  const urlTok = new URLSearchParams(location.search).get('token');
+  if (urlTok) {
+    token = urlTok;
+    localStorage.setItem('mcpl_token', token);
+    history.replaceState(null, '', location.pathname);
+  }
+
+  function authHeaders() {
+    return token ? { 'X-Auth-Token': token } : {};
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function setLoginVisible(v) {
+    overlay.classList.toggle('hide', !v);
+    logoutBtn.style.display = v ? 'none' : 'inline-block';
+    if (!v) {
+      whoami.textContent = token ? ('已登录') : '';
+      input.focus();
+    }
+  }
+
+  async function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if (!u || !p) { loginErr.textContent = '请输入用户名和密码'; return; }
+    loginBtn.disabled = true;
+    loginErr.textContent = '';
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const d = await r.json();
+      if (r.ok && d.ok) {
+        token = d.token;
+        localStorage.setItem('mcpl_token', token);
+        whoami.textContent = d.username;
+        setLoginVisible(false);
+        load();
+      } else {
+        loginErr.textContent = d.detail || '登录失败';
+      }
+    } catch (e) {
+      loginErr.textContent = '网络错误，请重试';
+    }
+    loginBtn.disabled = false;
+  }
+
+  function logout() {
+    token = '';
+    localStorage.removeItem('mcpl_token');
+    whoami.textContent = '';
+    setLoginVisible(true);
+    grid.innerHTML = '';
+    countEl.textContent = '-';
+  }
+
+  document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+  function render(d) {
+    countEl.textContent = d.count + ' 个应用';
+    grid.innerHTML = d.apps.map(a => {
+      const chips = a.ports.map(p => `<span class="chip">${esc(p)}</span>`).join('');
+      const link = a.preview ? `<a class="link" href="${esc(a.preview)}" target="_blank" rel="noopener">${esc(a.preview)}</a>` : '';
+      const authChip = a.auth && a.auth !== '未知' ? `<span class="chip gray">鉴权：${esc(a.auth)}</span>` : '';
+      return `
+      <div class="card ${a.public ? '' : 'local'}">
+        <div class="head">
+          <span class="title">${esc(a.title)}</span>
+          <span class="proc">${esc(a.proc_name || '')}${a.pid ? ' pid ' + esc(a.pid) : ''}</span>
+          <span class="badge ${a.public ? 'pub' : ''}">${a.public ? '公网可预览' : '仅本机监听'}</span>
+        </div>
+        <div class="desc">${esc(a.desc)}</div>
+        <div class="meta">
+          ${a.ports.length > 1 ? `<span class="chip gray">${esc(a.ports.length)} 个端口</span>` : ''}
+          ${chips}
+          ${authChip}
+          ${link}
+        </div>
+      </div>`;
+    }).join('');
+    empty.style.display = d.count ? 'none' : 'block';
+    foot.textContent = d.preview_base
+      ? '预览域名 ' + d.preview_base + '，链接由访问域名自动推导'
+      : '当前通过非预览域名访问，未生成预览链接（可通过平台预览入口打开）';
+  }
+
+  async function load() {
+    try {
+      const r = await fetch(`/api/apps?q=${encodeURIComponent(input.value.trim())}&include_local=${localCb.checked ? 1 : 0}`, {
+        headers: authHeaders()
+      });
+      if (r.status === 401) {
+        token = '';
+        localStorage.removeItem('mcpl_token');
+        setLoginVisible(true);
+        return;
+      }
+      render(await r.json());
+    } catch (e) {
+      countEl.textContent = '加载失败';
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(load, 200);
+  });
+  localCb.addEventListener('change', load);
+
+  (async function init() {
+    if (!token) { setLoginVisible(true); return; }
+    try {
+      const r = await fetch('/api/me', { headers: authHeaders() });
+      if (r.ok) {
+        const d = await r.json();
+        whoami.textContent = d.username || '已登录';
+        setLoginVisible(false);
+        load();
+        setInterval(load, 15000);
+      } else {
+        token = '';
+        localStorage.removeItem('mcpl_token');
+        setLoginVisible(true);
+      }
+    } catch (e) {
+      countEl.textContent = '加载失败';
+    }
+  })();
+</script>
+</body>
+</html>

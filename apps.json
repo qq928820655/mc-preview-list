@@ -1,0 +1,50 @@
+[
+  {
+    "match_keyword": "workbuddy2api-hub",
+    "title": "wkapi 网关 (workbuddy2api-hub)",
+    "desc": "workbuddy 多账号 API 网关（v1.7.28）：Claude/OpenAI 兼容接口、多账号轮询、代理槽位出口、用量看板与签到管理",
+    "auth": "api key"
+  },
+  {
+    "match_port": 8006,
+    "title": "mihomo-pool 代理池面板",
+    "desc": "多出口代理池管理面板与 API：订阅导入（311 节点）、自动测速、逐节点端口分配，为 hub 提供住宅 IP 出口",
+    "auth": "token"
+  },
+  {
+    "match_keyword": "bin/mihomo",
+    "title": "mihomo 内核（mihomo-pool 出口）",
+    "desc": "mihomo 代理内核监听端口组：7890 固定 / 7891 轮换 / 7892 粘性 / 7893 本机直连，17901-17916 为逐节点出口、17990 为本地 vmess 入站；纯 TCP 代理端口，无 Web 页面",
+    "auth": "无"
+  },
+  {
+    "match_keyword": "opsbox",
+    "title": "opsbox 运维工作台",
+    "desc": "文件管理（浏览/编辑/上传/解压/搜索/批量操作）+ 资源监控（CPU/内存/磁盘/网络/Top 进程）+ PushPlus 阈值预警；右上角菜单可跳转终端桥接与链路探针",
+    "auth": "密码"
+  },
+  {
+    "match_keyword": "ai-terminal-bridge",
+    "title": "终端桥接 (ai-terminal-bridge)",
+    "desc": "浏览器 Web 终端：直接在页面操作本机 shell，与 opsbox 共享登录态免密跳转",
+    "auth": "令牌（与 opsbox 同密码）"
+  },
+  {
+    "match_keyword": "latency-test",
+    "title": "链路探针 (latency-test)",
+    "desc": "链路质量探测：延迟与吞吐测试，用于评估代理出口线路质量",
+    "auth": "无"
+  },
+  {
+    "match_keyword": "cpa-standard",
+    "title": "CPA API 中转 (cpa-standard)",
+    "desc": "多上游 API Key 池管理：OpenAI/Claude 双协议兼容代理、Key 轮询与余额降级、用量统计面板；已接入 hub 作为上游，串联 mihomo-pool 出口",
+    "auth": "master key"
+  },
+  {
+    "match_keyword": "mc-preview-list",
+    "title": "MC 预览列表（本应用）",
+    "desc": "自动扫描本服务器全部监听端口，识别进程并匹配功能说明；支持关键词搜索端口号，预览地址按访问域名自动推导，支持用户名密码登录（token 鉴权，默认 admin/pwd123）",
+    "auth": "用户名/密码"
+  }
+]
