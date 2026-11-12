@@ -42,7 +42,8 @@ sh install.sh restart
 
 ## 登录鉴权
 
-- 页面与 `GET /api/apps` 均需登录；`POST /api/login` 换取 HMAC token（7 天有效）
+- 页面与 `GET /api/apps` 均需登录；`POST /api/login` 换取 HMAC 长效 token（有效期 10 年，`data/secret.key` 不变则一直有效）
+- token 存于浏览器 localStorage，登录后页面长期有效，无需重复登录
 - token 可通过 `X-Auth-Token` 头或 `?token=` 查询串传递
 - 制品默认账号 `admin / pwd123`，首次登录后请用交互菜单 [2] 修改
 

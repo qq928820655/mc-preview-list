@@ -20,7 +20,7 @@ SECRET_FILE = DATA_DIR / "secret.key"
 PORT = int(os.environ.get("MCPL_PORT", "8010"))
 PREVIEW_SUFFIX = os.environ.get("MCPL_PREVIEW_SUFFIX", "").strip()
 PREVIEW_SCHEME = os.environ.get("MCPL_PREVIEW_SCHEME", "https")
-TOKEN_TTL_SECONDS = 7 * 24 * 3600
+TOKEN_TTL_SECONDS = 10 * 365 * 24 * 3600
 DEFAULT_USER = "admin"
 DEFAULT_PASSWORD = "pwd123"
 
